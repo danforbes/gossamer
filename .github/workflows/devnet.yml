@@ -3,15 +3,22 @@ on:
   push:
     branches:
       - devnet
-      
+
 jobs:
   update:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+
       - uses: actions/setup-go@v2
         with:
-          go-version: '^1.17.0'
+          go-version: "1.17.x"
+      - name: Install Go 1.18beta1
+        run: |
+          go install golang.org/dl/go1.18beta1@latest && \
+          GOBINPATH="$(which go)" && \
+          rm "$GOBINPATH" && \
+          mv "$(which go1.18beta1)" "$GOBINPATH"
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -74,7 +81,7 @@ jobs:
         working-directory: ./devnet/cmd/scale-down-ecs-service
         run: |
           go run . -c gssmr-ecs -s="gssmr-ecs-(Charlie|Bob)Service-.+$"
-      
+
       - name: docker compose up
         id: docker-compose-up
         working-directory: ./devnet/gssmr-ecs
